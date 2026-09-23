@@ -3,8 +3,8 @@ import { set_sidebar } from '../../utils/auto-gen-sidebar.mjs'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "CSP",
-  description: "A document of csp",
+  title: "Shengpeng Chen's Blog",
+  description: "Paper, code, and other things",
   srcDir: './src',
   lang: 'zh-CN',
 
