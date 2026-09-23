@@ -1,70 +1,56 @@
-import path from "node:path";
 import fs from "node:fs";
+import path from "node:path";
 
-// 文件根目录
-const DIR_PATH = path.resolve();
-// 白名单,过滤不是文章的文件和文件夹
-const WHITE_LIST = [
+// 这些目录只用于站点配置或静态资源，不属于文档项目。
+const HIDDEN_ENTRIES = new Set([
   "index.md",
+  "public",
   ".vitepress",
   "node_modules",
   ".idea",
   "assets",
-];
+]);
 
-// 判断是否是文件夹
-const isDirectory = (path) => fs.lstatSync(path).isDirectory();
+const byName = (left, right) =>
+  left.localeCompare(right, "zh-CN", { numeric: true });
 
-// 取差值
-const intersections = (arr1, arr2) =>
-  Array.from(new Set(arr1.filter((item) => !new Set(arr2).has(item))));
-
-// 把方法导出直接使用
-function getList(params, path1, pathname) {
-  // 存放结果
-  const res = [];
-  // 开始遍历params
-  for (let file in params) {
-    // 拼接目录
-    const dir = path.join(path1, params[file]);
-    // 判断是否是文件夹
-    const isDir = isDirectory(dir);
-    if (isDir) {
-      // 如果是文件夹,读取之后作为下一次递归参数
-      const files = fs.readdirSync(dir);
-      res.push({
-        text: params[file],
-        collapsible: true,
-        items: getList(files, dir, `${pathname}/${params[file]}`),
-      });
-    } else {
-      // 获取名字
-      const name = path.basename(params[file]);
-      // 排除非 md 文件
-      const suffix = path.extname(params[file]);
-      if (suffix !== ".md") {
-        continue;
+function buildItems(directory, route = "") {
+  const entries = fs
+    .readdirSync(directory, { withFileTypes: true })
+    .filter((entry) => !HIDDEN_ENTRIES.has(entry.name))
+    .sort((left, right) => {
+      // 项目/子目录优先展示，再展示目录中的 Markdown 页面。
+      if (left.isDirectory() !== right.isDirectory()) {
+        return left.isDirectory() ? -1 : 1;
       }
-      res.push({
-        text: name,
-        link: `${pathname.replace("/docs/src", "")}/${name}`,
-      });
+      return byName(left.name, right.name);
+    });
+
+  return entries.flatMap((entry) => {
+    const entryPath = path.join(directory, entry.name);
+    const entryRoute = `${route}/${entry.name}`;
+
+    if (entry.isDirectory()) {
+      const items = buildItems(entryPath, entryRoute);
+
+      // 不显示没有 Markdown 内容的目录，项目及子目录均默认折叠。
+      return items.length
+        ? [{ text: entry.name, collapsed: true, items }]
+        : [];
     }
-  }
-  // 对name做一下处理，把后缀删除
-  res.map((item) => {
-    item.text = item.text.replace(/\.md$/, "");
+
+    if (!entry.isFile() || path.extname(entry.name) !== ".md") {
+      return [];
+    }
+
+    return [
+      {
+        text: path.basename(entry.name, ".md"),
+        link: entryRoute.replace(/\.md$/, ""),
+      },
+    ];
   });
-  return res;
 }
 
-export const set_sidebar = (pathname) => {
-  // 获取pathname的路径
-  const dirPath = path.join(DIR_PATH, pathname);
-  // 读取pathname下的所有文件或者文件夹
-  const files = fs.readdirSync(dirPath);
-  // 过滤掉
-  const items = intersections(files, WHITE_LIST);
-  // getList 函数后面会讲到
-  return getList(items, dirPath, pathname);
-};
+export const set_sidebar = (pathname) =>
+  buildItems(path.resolve(pathname));

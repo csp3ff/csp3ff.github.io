@@ -13,14 +13,9 @@ export default defineConfig({
       { text: 'Home', link: '/' }
     ],
 
-    sidebar: [
-      {
-        text: "导航",
-        items: set_sidebar("/docs/src"),
-        collapsible: true,
-        collapsed: false,
-      },
-    ],
+    // src 下的一级目录就是一个独立项目；项目及子目录默认折叠。
+    // public、assets 等资源目录由生成器过滤，不出现在左侧导航中。
+    sidebar: set_sidebar("docs/src"),
 
 
     socialLinks: [
