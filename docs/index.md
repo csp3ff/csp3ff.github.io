@@ -3,8 +3,8 @@
 layout: home
 
 hero:
-  name: "CSP"
-  text: "A document of csp"
+  name: "Shengpeng Chen's Blog"
+  text: "Paper, code, and other things."
   tagline: My great project tagline
   actions:
     - theme: brand

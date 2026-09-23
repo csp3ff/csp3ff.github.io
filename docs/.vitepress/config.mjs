@@ -4,7 +4,7 @@ import { set_sidebar } from '../../utils/auto-gen-sidebar.mjs'
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Shengpeng Chen's Blog",
-  description: "Paper, code, and other things",
+  description: "Paper, code, and other things.",
   srcDir: './src',
   lang: 'zh-CN',
 
