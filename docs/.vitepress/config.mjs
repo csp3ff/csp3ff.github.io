@@ -7,6 +7,11 @@ export default defineConfig({
   description: "A document of csp",
   srcDir: './src',
   lang: 'zh-CN',
+
+  markdown: {
+    math: true,
+  },
+
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [  
